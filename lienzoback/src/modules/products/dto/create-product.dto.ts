@@ -25,4 +25,8 @@ export class CreateProductDto {
 
   @IsUUID()
   categoryId: string;
+
+  @IsOptional()
+  @IsString({ each: true })
+  ingredients?: string[];
 }

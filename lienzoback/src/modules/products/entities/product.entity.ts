@@ -31,6 +31,9 @@ export class Products {
   @Column({ type: 'int', nullable: true })
   caloricLevel: number;
 
+  @Column('simple-array', { nullable: true })
+  ingredients: string[];
+
   @ManyToOne(() => Categories, (category) => category.product)
   @JoinColumn({ name: 'category_id' })
   categoryId: Categories;

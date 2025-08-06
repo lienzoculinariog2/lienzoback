@@ -32,6 +32,7 @@ export class ProductsService {
     product.categoryId = category;
     product.imgUrl = dto.imgUrl;
     product.isActive = dto.isActive ?? true;
+    product.ingredients = dto.ingredients ?? [];
 
     return await this.productsRepository.save(product);
   }
