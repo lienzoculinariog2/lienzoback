@@ -67,9 +67,17 @@ export class CategoriesService {
     return categoryById;
   }
 
-  // update(id: number, updateCategoryDto: UpdateCategoryDto) {
-  //   return `This action updates a #${id} category`;
-  // }
+  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+    await this.categoriesRepository.update(id, updateCategoryDto);
+    const updatedCategory = await this.categoriesRepository.findOne({
+      where: { id },
+    });
+    if (!updatedCategory) {
+      throw new NotFoundException(`Categoría con id ${id} no existe`);
+    }
+    await this.categoriesRepository.update(id, updateCategoryDto);
+    return { message: 'Category successfully updated', updatedCategory };
+  }
 
   // remove(id: number) {
   //   return `This action removes a #${id} category`;

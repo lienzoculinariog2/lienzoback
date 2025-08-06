@@ -1,7 +1,7 @@
 export class CreateCategoryDto {
   /**
    *@description category´s name
-   *@example Vegetariano
+   *@example vegetariano
    */
   name: string;
 
