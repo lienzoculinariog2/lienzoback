@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Products } from './entities/product.entity';
 import { Categories } from '../categories/entities/category.entity';
-import { dot } from 'node:test/reporters';
 
 @Injectable()
 export class ProductsService {
@@ -50,12 +49,22 @@ export class ProductsService {
     return `This action returns all products`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async getProductById(id: string): Promise<Products | null> {
+    return await this.productsRepository.findOne({
+      where: { id },
+    });
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: string, product: Partial<Products>) {
+    await this.productsRepository.update(id, product);
+
+    const updatedProduct = await this.productsRepository.findOne({
+      where: { id },
+    });
+    if (!updatedProduct) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+    return updatedProduct;
   }
 
   remove(id: number) {
