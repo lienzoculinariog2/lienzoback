@@ -17,8 +17,7 @@ import typeOrmConfig from './config/typeorm';
 
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) =>
-        configService.get('typeorm')!,
+      useFactory: (configService: ConfigService) => configService.get('typeorm')!,
     }),
 
     UsersModule,
