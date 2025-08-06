@@ -1,20 +1,18 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { Product } from '../../products/entities/product.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Product } from 'src/products/entities/product.entity';
 
-@Entity('files')
+@Entity('file_uploads')
 export class FileUpload {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  url: string;
-
-  @Column()
   publicId: string;
 
-  @Column({ nullable: true })
-  originalName?: string;
+  @Column()
+  url: string;
 
-  @ManyToOne(() => Product, (product) => product.images, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Product, (product) => product.images, { nullable: false })
   product: Product;
 }
+

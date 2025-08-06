@@ -3,11 +3,12 @@ import {
   Post,
   UploadedFile,
   UseInterceptors,
+  Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { FileUploadService } from './file-upload.service';
-import type { Express } from 'express';
+import { CreateFileUploadDto } from './dto/create-file-upload.dto';
 
 @Controller('files')
 export class FileUploadController {
@@ -26,11 +27,15 @@ export class FileUploadController {
       },
     }),
   )
-  async uploadImage(@UploadedFile() file: Express.Multer.File) {
-    const uploadedImage = await this.fileUploadService.uploadImage(file);
+  async uploadImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: Pick<CreateFileUploadDto, 'productId'>,
+  ) {
+    const uploaded = await this.fileUploadService.uploadImage(file, body.productId);
     return {
-      secure_url: uploadedImage.secure_url,
-      public_id: uploadedImage.public_id,
+      id: uploaded.id,
+      url: uploaded.url,
+      publicId: uploaded.publicId,
     };
   }
 }
