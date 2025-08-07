@@ -25,7 +25,7 @@ export class Products {
     type: 'text',
     default: 'No image',
   })
-  imgUrl: string | null;
+  imgUrl?: string | null;
 
   @Column({ default: true })
   isActive: boolean;

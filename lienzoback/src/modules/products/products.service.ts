@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,18 +20,28 @@ export class ProductsService {
       id: dto.categoryId,
     });
     if (!category) {
-      throw new NotFoundException('Categoría no encontrada');
+      throw new NotFoundException(`Categoría con ID ${dto.categoryId} no encontrada.`);
     }
-    const product = this.productsRepository.create();
-    product.name = dto.name;
-    product.description = dto.description;
-    product.price = dto.price;
-    product.stock = dto.stock;
-    product.caloricLevel = dto.caloricLevel;
-    product.categoryId = category;
-    product.imgUrl = dto.imgUrl || null;
-    product.isActive = dto.isActive ?? true;
-    product.ingredients = dto.ingredients ?? [];
+
+    const existingProduct = await this.productsRepository.findOne({
+      where: { name: dto.name },
+    });
+    if (existingProduct) {
+      throw new ConflictException(`Ya existe un producto con el nombre "${dto.name}".`);
+    }
+
+    const product = this.productsRepository.create({
+      name: dto.name,
+      description: dto.description,
+      price: dto.price,
+      stock: dto.stock,
+      caloricLevel: dto.caloricLevel,
+      ingredients: dto.ingredients ?? [],
+      isActive: dto.isActive ?? true,
+      categoryId: category,
+      imgUrl: dto.imgUrl,
+    });
+
     return await this.productsRepository.save(product);
   }
 
@@ -48,14 +58,16 @@ export class ProductsService {
 
   // Nuevo método para obtener un producto por su ID
   async getProductById(id: string): Promise<Products | null> {
-    return this.productsRepository.findOneBy({ id });
+    return await this.productsRepository.findOne({
+      where: { id },
+    });
   }
 
   // Nuevo método para actualizar un producto
-    async updateProductImage(productId: string, secureUrl: string) {
+  async updateProductImage(productId: string, secureUrl: string) {
     // 1. Busca el producto por su ID
     const product = await this.productsRepository.findOneBy({ id: productId });
-    
+
     if (!product) {
       throw new NotFoundException(`Producto con ID ${productId} no encontrado`);
     }
@@ -69,10 +81,7 @@ export class ProductsService {
     return product; // Devuelve el producto con la URL actualizada
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
-  }
-  update(id: number, updateProductDto: UpdateProductDto) {
+  update(id: string, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
   }
   remove(id: number) {

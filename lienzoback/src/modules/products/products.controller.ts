@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Query,
@@ -34,9 +33,9 @@ export class ProductsController {
     return this.productsService.getProductById(id);
   }
 
-  @Put(':id')
-  update(@Param('id') id: string, @Body() product: Partial<Products>) {
-    return this.productsService.update(id, product);
+  @Put(':id/image')
+  updateImage(@Param('id') id: string, @Body('imgUrl') imgUrl: string) {
+    return this.productsService.updateProductImage(id, imgUrl);
   }
 
   @Delete(':id')
