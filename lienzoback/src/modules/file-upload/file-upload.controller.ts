@@ -1,34 +1,44 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  Param,
+  ParseUUIDPipe,
+  MaxFileSizeValidator,
+  ParseFilePipe,
+  FileTypeValidator,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { FileUploadService } from './file-upload.service';
-import { CreateFileUploadDto } from './dto/create-file-upload.dto';
-import { UpdateFileUploadDto } from './dto/update-file-upload.dto';
+import { ProductsService } from '../products/products.service';
 
 @Controller('file-upload')
 export class FileUploadController {
-  constructor(private readonly fileUploadService: FileUploadService) {}
+  constructor(
+    private readonly fileUploadService: FileUploadService,
+    private readonly productsService: ProductsService,
+  ) {}
 
-  @Post()
-  create(@Body() createFileUploadDto: CreateFileUploadDto) {
-    return this.fileUploadService.create(createFileUploadDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.fileUploadService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.fileUploadService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFileUploadDto: UpdateFileUploadDto) {
-    return this.fileUploadService.update(+id, updateFileUploadDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.fileUploadService.remove(+id);
+  @Post(':productId')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadProductImage(
+    @Param('productId', ParseUUIDPipe) productId: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }), // 5 MB
+          new FileTypeValidator({ fileType: 'image/(jpeg|png|gif)' }), // Solo permite imágenes
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    const cloudinaryResponse = await this.fileUploadService.uploadImage(file, productId);
+    const updatedProduct = await this.productsService.updateProductImage(
+      productId,
+      cloudinaryResponse.secure_url, // Extrae la URL segura de la respuesta
+    );
+    return updatedProduct;
   }
 }
