@@ -9,7 +9,7 @@
       "description": "Platos diseñados para apoyar el desarrollo muscular y mantener la energía, con un alto contenido de proteínas magras."
     },
     "caloricLevel": 2,
-    "attributes": ["salmón", "espárragos", "limón", "pescado"]
+    "ingredients": ["salmón", "espárragos", "limón", "pescado"]
   },
   {
     "name": "Ensalada Keto de Pollo y Aguacate",
@@ -21,7 +21,7 @@
       "description": "Opciones bajas en carbohidratos y ricas en grasas saludables, perfectas para quienes siguen la dieta cetogénica."
     },
     "caloricLevel": 3,
-    "attributes": ["pollo", "aguacate", "tomate", "pepino"]
+    "ingredients": ["pollo", "aguacate", "tomate", "pepino"]
   },
   {
     "name": "Bowl de Quinoa y Vegetales",
@@ -33,7 +33,7 @@
       "description": "Platos preparados sin gluten, ideales para personas con intolerancia o sensibilidad a esta proteína."
     },
     "caloricLevel": 1,
-    "attributes": ["quinoa", "brócoli", "zanahoria", "garbanzos"]
+    "ingredients": ["quinoa", "brócoli", "zanahoria", "garbanzos"]
   },
   {
     "name": "Filete de Res con Puré de Coliflor",
@@ -45,7 +45,7 @@
       "description": "Platos diseñados para apoyar el desarrollo muscular y mantener la energía, con un alto contenido de proteínas magras."
     },
     "caloricLevel": 4,
-    "attributes": ["carne", "coliflor", "res"]
+    "ingredients": ["carne", "coliflor", "res"]
   },
   {
     "name": "Curry de Pollo con Leche de Coco",
@@ -57,7 +57,7 @@
       "description": "Opciones bajas en carbohidratos y ricas en grasas saludables, perfectas para quienes siguen la dieta cetogénica."
     },
     "caloricLevel": 5,
-    "attributes": ["pollo", "leche de coco", "especias", "curry"]
+    "ingredients": ["pollo", "leche de coco", "especias", "curry"]
   },
   {
     "name": "Pizza de Coliflor sin Gluten",
@@ -69,7 +69,7 @@
       "description": "Platos preparados sin gluten, ideales para personas con intolerancia o sensibilidad a esta proteína."
     },
     "caloricLevel": 2,
-    "attributes": ["coliflor", "queso", "tomate", "vegetales"]
+    "ingredients": ["coliflor", "queso", "tomate", "vegetales"]
   },
   {
     "name": "Bowl de Açaí sin Azúcar Añadida",
@@ -81,7 +81,7 @@
       "description": "Comidas y postres con bajo contenido de azúcares, ideales para mantener niveles de glucosa estables."
     },
     "caloricLevel": 1,
-    "attributes": ["açaí", "fresas", "arándanos", "chía"]
+    "ingredients": ["açaí", "fresas", "arándanos", "chía"]
   },
   {
     "name": "Pechuga de Pollo Rellena con Espinacas y Queso",
@@ -93,7 +93,7 @@
       "description": "Platos diseñados para apoyar el desarrollo muscular y mantener la energía, con un alto contenido de proteínas magras."
     },
     "caloricLevel": 4,
-    "attributes": ["pollo", "espinacas", "queso"]
+    "ingredients": ["pollo", "espinacas", "queso"]
   },
   {
     "name": "Hamburguesa Keto con Pan de Almendras",
@@ -105,7 +105,7 @@
       "description": "Opciones bajas en carbohidratos y ricas en grasas saludables, perfectas para quienes siguen la dieta cetogénica."
     },
     "caloricLevel": 5,
-    "attributes": ["carne", "pan de almendras", "queso", "lechuga"]
+    "ingredients": ["carne", "pan de almendras", "queso", "lechuga"]
   },
   {
     "name": "Sopa de Lentejas",
@@ -117,7 +117,7 @@
       "description": "Platos preparados sin gluten, ideales para personas con intolerancia o sensibilidad a esta proteína."
     },
     "caloricLevel": 1,
-    "attributes": ["lentejas", "vegetales", "especias"]
+    "ingredients": ["lentejas", "vegetales", "especias"]
   },
   {
     "name": "Lasaña de Calabacín Vegana",
@@ -129,6 +129,6 @@
       "description": "Comidas 100% basadas en plantas, sin productos de origen animal, ricas en sabor y nutrientes."
     },
     "caloricLevel": 2,
-    "attributes": ["calabacín", "tofu", "espinacas", "tomate"]
+    "ingredients": ["calabacín", "tofu", "espinacas", "tomate"]
   }
 ]

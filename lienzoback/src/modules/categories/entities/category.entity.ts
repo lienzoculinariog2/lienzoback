@@ -12,6 +12,12 @@ export class Categories {
   @Column({ type: 'varchar', length: 200, nullable: false })
   description: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  imgUrl: string;
+
+  @Column({ default: true })
+  isActive: boolean;
+
   @OneToMany(() => Products, (product) => product.categoryId)
   product: Products[];
 }
