@@ -1,11 +1,20 @@
-import { Module } from '@nestjs/common';
+// src/modules/products/products.module.ts
+
+import { Module, forwardRef } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
-import { FileUploadService } from '../file-upload/file-upload.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Products } from './entities/product.entity';
+import { Categories } from '../categories/entities/category.entity';
+import { FileUploadModule } from '../file-upload/file-upload.module';
 
 @Module({
+  imports: [
+    TypeOrmModule.forFeature([Categories, Products]),
+    forwardRef(() => FileUploadModule), // <-- Uso de forwardRef()
+  ],
   controllers: [ProductsController],
   providers: [ProductsService],
-  imports: [FileUploadService],
+  exports: [ProductsService],
 })
 export class ProductsModule {}

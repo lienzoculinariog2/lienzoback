@@ -1,44 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { FileUpload } from './entities/file-upload.entity';
-import { Repository } from 'typeorm';
-import { CLOUDINARY, Cloudinary } from 'src/config/cloudinary';
-import { Inject } from '@nestjs/common';
-import { CreateFileUploadDto } from './dto/create-file-upload.dto';
-import { ProductsService } from 'src/products/products.service';
+import { Injectable, Inject } from '@nestjs/common';
+import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
+import toStream = require('buffer-to-stream');
+import { CLOUDINARY } from './constans'; 
 
 @Injectable()
 export class FileUploadService {
-  constructor(
-    @Inject(CLOUDINARY)
-    private readonly cloudinary: Cloudinary,
-    @InjectRepository(FileUpload)
-    private readonly fileRepo: Repository<FileUpload>,
-    private readonly productsService: ProductsService
-  ) {}
+  constructor(@Inject(CLOUDINARY) private cloudinary_instance) {}
 
-  async uploadImage(file: Express.Multer.File, productId: string): Promise<FileUpload> {
-    const product = await this.productsService.findOne(productId);
-
-    const uploaded = await new Promise<any>((resolve, reject) => {
-      this.cloudinary.uploader.upload_stream(
+  async uploadImage(
+    file: Express.Multer.File,
+    productId: string,
+  ): Promise<UploadApiResponse | UploadApiErrorResponse> {
+    return new Promise((resolve, reject) => {
+      
+      const upload = this.cloudinary_instance.uploader.upload_stream(
         {
-          folder: 'products',
-          resource_type: 'image',
+          folder: `products/${productId}`,
+          resource_type: 'auto',
         },
         (error, result) => {
           if (error) return reject(error);
           resolve(result);
         },
-      ).end(file.buffer);
-    });
+      );
 
-    const fileUpload = this.fileRepo.create({
-      publicId: uploaded.public_id,
-      url: uploaded.secure_url,
-      product,
+      toStream(file.buffer).pipe(upload);
     });
-
-    return this.fileRepo.save(fileUpload);
   }
 }

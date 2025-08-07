@@ -1,42 +1,35 @@
 import {
   Controller,
   Post,
-  UploadedFile,
   UseInterceptors,
-  Body,
+  UploadedFile,
+  Param,
+  ParseUUIDPipe,
+  MaxFileSizeValidator,
+  ParseFilePipe,
+  FileTypeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
 import { FileUploadService } from './file-upload.service';
-import { CreateFileUploadDto } from './dto/create-file-upload.dto';
 
-@Controller('files')
-export class FileUploadController {
-  constructor(private readonly fileUploadService: FileUploadService) {}
-
-  @Post('upload')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: memoryStorage(),
-      limits: { fileSize: 5 * 1024 * 1024 },
-      fileFilter: (req, file, cb) => {
-        if (!file.mimetype.match(/^image\/(jpeg|png|webp)$/)) {
-          return cb(new Error('Only image files are allowed!'), false);
-        }
-        cb(null, true);
-      },
-    }),
-  )
-  async uploadImage(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() body: Pick<CreateFileUploadDto, 'productId'>,
-  ) {
-    const uploaded = await this.fileUploadService.uploadImage(file, body.productId);
-    return {
-      id: uploaded.id,
-      url: uploaded.url,
-      publicId: uploaded.publicId,
-    };
-  }
+@Controller('file-upload')
+export class FileUploadController { 
+   constructor(private readonly fileUploadService: FileUploadService) {}
+    
+      @Post(':productId')
+      @UseInterceptors(FileInterceptor('file'))
+      uploadProductImage(
+        @Param('productId', ParseUUIDPipe) productId: string,
+        @UploadedFile(
+          new ParseFilePipe({
+            validators: [
+              new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }), // 5 MB
+              new FileTypeValidator({ fileType: 'image/(jpeg|png|gif)' }), // Solo permite imágenes
+            ],
+          }),
+        )
+        file: Express.Multer.File,
+      ) {
+        return this.fileUploadService.uploadImage(file, productId);
+      }
 }
-
