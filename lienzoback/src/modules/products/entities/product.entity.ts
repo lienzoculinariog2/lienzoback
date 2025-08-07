@@ -2,6 +2,8 @@
 import { Categories } from 'src/modules/categories/entities/category.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 
+import { OneToMany } from 'typeorm';
+
 @Entity('products')
 export class Products {
   @PrimaryGeneratedColumn('uuid')
@@ -23,7 +25,7 @@ export class Products {
     type: 'text',
     default: 'No image',
   })
-  imgUrl?: string;
+  imgUrl: string | null;
 
   @Column({ default: true })
   isActive: boolean;

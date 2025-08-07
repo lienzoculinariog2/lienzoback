@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Products } from './entities/product.entity';
 import { Categories } from '../categories/entities/category.entity';
-import { dot } from 'node:test/reporters';
 
 @Injectable()
 export class ProductsService {
@@ -15,11 +14,11 @@ export class ProductsService {
     @InjectRepository(Categories)
     private readonly categoriesRepository: Repository<Categories>,
   ) {}
+
   async create(dto: CreateProductDto): Promise<Products> {
     const category = await this.categoriesRepository.findOneBy({
       id: dto.categoryId,
     });
-
     if (!category) {
       throw new NotFoundException('Categoría no encontrada');
     }
@@ -30,16 +29,14 @@ export class ProductsService {
     product.stock = dto.stock;
     product.caloricLevel = dto.caloricLevel;
     product.categoryId = category;
-    product.imgUrl = dto.imgUrl;
+    product.imgUrl = dto.imgUrl || null;
     product.isActive = dto.isActive ?? true;
     product.ingredients = dto.ingredients ?? [];
-
     return await this.productsRepository.save(product);
   }
 
   async findAll(page: number = 1, limit: number = 5) {
     let products = await this.productsRepository.find();
-
     if (!page || !limit) {
       return products;
     }
@@ -47,27 +44,37 @@ export class ProductsService {
     const end = start + +limit;
     products = products.slice(start, end);
     return products;
-    return `This action returns all products`;
   }
 
+  // Nuevo método para obtener un producto por su ID
   async getProductById(id: string): Promise<Products | null> {
-    return await this.productsRepository.findOne({
-      where: { id },
-    });
+    return this.productsRepository.findOneBy({ id });
   }
 
-  async update(id: string, product: Partial<Products>) {
-    await this.productsRepository.update(id, product);
-
-    const updatedProduct = await this.productsRepository.findOne({
-      where: { id },
-    });
-    if (!updatedProduct) {
-      throw new NotFoundException(`Product with ${id} not found`);
+  // Nuevo método para actualizar un producto
+    async updateProductImage(productId: string, secureUrl: string) {
+    // 1. Busca el producto por su ID
+    const product = await this.productsRepository.findOneBy({ id: productId });
+    
+    if (!product) {
+      throw new NotFoundException(`Producto con ID ${productId} no encontrado`);
     }
-    return updatedProduct;
+
+    // 2. Actualiza la URL de la imagen
+    product.imgUrl = secureUrl;
+
+    // 3. Guarda los cambios en la base de datos
+    await this.productsRepository.save(product);
+
+    return product; // Devuelve el producto con la URL actualizada
   }
 
+  findOne(id: number) {
+    return `This action returns a #${id} product`;
+  }
+  update(id: number, updateProductDto: UpdateProductDto) {
+    return `This action updates a #${id} product`;
+  }
   remove(id: number) {
     return `This action removes a #${id} product`;
   }

@@ -1,15 +1,14 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { config as dotenvConfig } from 'dotenv';
+import { ConfigService } from '@nestjs/config';
 
-dotenvConfig({ path: '.env.development' });
-
-export const cloudinaryConfig = {
+export const CloudinaryConfig = {
   provide: 'CLOUDINARY',
-  useFactory: () => {
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
-      api_key: process.env.CLOUDINARY_API_KEY,
+  useFactory: (configService: ConfigService) => {
+    return cloudinary.config({
+      cloud_name: configService.get<string>('CLOUDINARY_CLOUD_NAME'),
+      api_key: configService.get<string>('CLOUDINARY_API_KEY'),
+      api_secret: configService.get<string>('CLOUDINARY_API_SECRET'),
     });
   },
+  inject: [ConfigService],
 };
