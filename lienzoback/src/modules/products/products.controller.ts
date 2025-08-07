@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -8,13 +8,13 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productsService.create(createProductDto);
+  async create(@Body() product: CreateProductDto) {
+    return this.productsService.create(product);
   }
 
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  findAll(@Query('page') page: 1, @Query('limit') limit: 5) {
+    return this.productsService.findAll(+page, +limit);
   }
 
   @Get(':id')
