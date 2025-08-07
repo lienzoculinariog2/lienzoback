@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Products } from './entities/product.entity';
 import { Categories } from '../categories/entities/category.entity';
+import { GetProductsFilterDto } from './dto/get-products-filter.dto';
 
 @Injectable()
 export class ProductsService {
@@ -35,38 +36,67 @@ export class ProductsService {
     return await this.productsRepository.save(product);
   }
 
-  async findAll(page: number = 1, limit: number = 5) {
-    let products = await this.productsRepository.find();
-    if (!page || !limit) {
-      return products;
+  async findAll(filterDto: GetProductsFilterDto): Promise<Products[]> {
+    const { 
+      name, 
+      price_min, 
+      price_max, 
+      isActive, 
+      categoryId, 
+      sortBy, 
+      order = 'asc' 
+    } = filterDto;
+
+    const query = this.productsRepository.createQueryBuilder('product');
+
+    if (categoryId) {
+      query.andWhere('product.categoryId = :categoryId', { categoryId });
     }
-    const start = (page - 1) * limit;
-    const end = start + +limit;
-    products = products.slice(start, end);
-    return products;
+
+    if (name) {
+      query.andWhere('product.name ILIKE :name', { name: `%${name}%` });
+    }
+
+    if (price_min) {
+      query.andWhere('product.price >= :price_min', { price_min });
+    }
+
+    if (price_max) {
+      query.andWhere('product.price <= :price_max', { price_max });
+    }
+
+    if (isActive !== undefined) {
+      query.andWhere('product.isActive = :isActive', { isActive });
+    }
+
+    
+    if (sortBy) {
+      const orderDirection = order.toUpperCase() as 'ASC' | 'DESC';
+      query.orderBy(`product.${sortBy}`, orderDirection);
+    }
+
+    
+    return await query.getMany();
   }
 
-  // Nuevo método para obtener un producto por su ID
+  
   async getProductById(id: string): Promise<Products | null> {
     return this.productsRepository.findOneBy({ id });
   }
 
-  // Nuevo método para actualizar un producto
-    async updateProductImage(productId: string, secureUrl: string) {
-    // 1. Busca el producto por su ID
+  async updateProductImage(productId: string, secureUrl: string) {
+    
     const product = await this.productsRepository.findOneBy({ id: productId });
     
     if (!product) {
       throw new NotFoundException(`Producto con ID ${productId} no encontrado`);
     }
 
-    // 2. Actualiza la URL de la imagen
     product.imgUrl = secureUrl;
 
-    // 3. Guarda los cambios en la base de datos
     await this.productsRepository.save(product);
 
-    return product; // Devuelve el producto con la URL actualizada
+    return product; 
   }
 
   findOne(id: number) {

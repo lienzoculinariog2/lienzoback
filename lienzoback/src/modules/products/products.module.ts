@@ -9,7 +9,7 @@ import { FileUploadModule } from '../file-upload/file-upload.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Categories, Products]),
-    forwardRef(() => FileUploadModule), // <-- Uso de forwardRef()
+    forwardRef(() => FileUploadModule),
   ],
   controllers: [ProductsController],
   providers: [ProductsService],

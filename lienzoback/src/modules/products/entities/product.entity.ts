@@ -1,8 +1,5 @@
-// src/products/entities/product.entity.ts
 import { Categories } from 'src/modules/categories/entities/category.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-
-import { OneToMany } from 'typeorm';
 
 @Entity('products')
 export class Products {

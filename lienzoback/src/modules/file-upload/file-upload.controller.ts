@@ -39,7 +39,7 @@ export class FileUploadController {
     );
      const updatedProduct = await this.productsService.updateProductImage(
       productId,
-      cloudinaryResponse.secure_url, // Extrae la URL segura de la respuesta
+      cloudinaryResponse.secure_url, 
     );
         return updatedProduct;
       }

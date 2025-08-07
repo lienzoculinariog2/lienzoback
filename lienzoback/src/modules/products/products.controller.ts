@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ValidationPipe } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { GetProductsFilterDto } from './dto/get-products-filter.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -13,8 +14,16 @@ export class ProductsController {
   }
 
   @Get()
-  findAll(@Query('page') page: 1, @Query('limit') limit: 5) {
-    return this.productsService.findAll(+page, +limit);
+  findAll(
+    @Query(new ValidationPipe({ 
+      transform: true, 
+      transformOptions: { enableImplicitConversion: true }, 
+      forbidNonWhitelisted: true
+    })) 
+    filterDto: GetProductsFilterDto
+  ) {
+    
+    return this.productsService.findAll(filterDto);
   }
 
   @Get(':id')
