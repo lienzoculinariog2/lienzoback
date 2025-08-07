@@ -1,5 +1,3 @@
-// src/modules/products/products.module.ts
-
 import { Module, forwardRef } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';

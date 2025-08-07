@@ -29,7 +29,7 @@ export class ProductsService {
     product.stock = dto.stock;
     product.caloricLevel = dto.caloricLevel;
     product.categoryId = category;
-    product.imgUrl = dto.imgUrl;
+    product.imgUrl = dto.imgUrl || null;
     product.isActive = dto.isActive ?? true;
     product.ingredients = dto.ingredients ?? [];
     return await this.productsRepository.save(product);
@@ -52,13 +52,21 @@ export class ProductsService {
   }
 
   // Nuevo método para actualizar un producto
-  async updateProduct(id: string, updateData: Partial<Products>): Promise<Products> {
-    await this.productsRepository.update(id, updateData);
-    const updatedProduct = await this.productsRepository.findOneBy({ id });
-    if (!updatedProduct) {
-      throw new NotFoundException('Producto no encontrado después de la actualización');
+    async updateProductImage(productId: string, secureUrl: string) {
+    // 1. Busca el producto por su ID
+    const product = await this.productsRepository.findOneBy({ id: productId });
+    
+    if (!product) {
+      throw new NotFoundException(`Producto con ID ${productId} no encontrado`);
     }
-    return updatedProduct;
+
+    // 2. Actualiza la URL de la imagen
+    product.imgUrl = secureUrl;
+
+    // 3. Guarda los cambios en la base de datos
+    await this.productsRepository.save(product);
+
+    return product; // Devuelve el producto con la URL actualizada
   }
 
   findOne(id: number) {
