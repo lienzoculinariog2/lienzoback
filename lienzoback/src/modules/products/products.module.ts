@@ -7,10 +7,7 @@ import { Categories } from '../categories/entities/category.entity';
 import { FileUploadModule } from '../file-upload/file-upload.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Categories, Products]),
-    forwardRef(() => FileUploadModule), // <-- Uso de forwardRef()
-  ],
+  imports: [TypeOrmModule.forFeature([Categories, Products]), FileUploadModule],
   controllers: [ProductsController],
   providers: [ProductsService],
   exports: [ProductsService],

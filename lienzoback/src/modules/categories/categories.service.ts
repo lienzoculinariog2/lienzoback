@@ -5,11 +5,15 @@ import { Categories } from './entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Products } from '../products/entities/product.entity';
+import { FileUploadService } from '../file-upload/file-upload.service';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectRepository(Categories) private readonly categoriesRepository: Repository<Categories>,
+    @InjectRepository(Products) private readonly productsRepository: Repository<Products>,
+    private readonly fileUploadService: FileUploadService,
   ) {}
 
   async seederService() {
@@ -34,17 +38,24 @@ export class CategoriesService {
     };
   }
 
-  async create(createCategoryDto: CreateCategoryDto) {
+  async create(categoryDto: CreateCategoryDto, file?: Express.Multer.File) {
     const existingCategory = await this.categoriesRepository.findOne({
-      where: { name: createCategoryDto.name },
+      where: { name: categoryDto.name },
     });
 
     if (existingCategory) {
-      throw new ConflictException(`Category '${createCategoryDto.name}' already exists`);
+      throw new ConflictException(`Category '${categoryDto.name}' already exists`);
     }
+
+    let imgUrl: string | undefined;
+    if (file) {
+      const cloudinaryResponse = await this.fileUploadService.uploadImage(file, 'categories');
+      imgUrl = cloudinaryResponse.secure_url;
+    }
+
     const category = this.categoriesRepository.create({
-      name: createCategoryDto.name,
-      description: createCategoryDto.description,
+      ...categoryDto,
+      imgUrl: imgUrl,
     });
     await this.categoriesRepository.save(category);
     return { message: 'Category successfully added', category };
@@ -63,24 +74,51 @@ export class CategoriesService {
       where: { id },
     });
     if (!categoryById) {
-      throw new NotFoundException(`Categoría con ${id} no existe`);
+      throw new NotFoundException(`Category with id ${id} not found`);
     }
     return categoryById;
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
-    await this.categoriesRepository.update(id, updateCategoryDto);
+  async update(id: string, categoryDto: UpdateCategoryDto, file?: Express.Multer.File) {
+    const category = await this.categoriesRepository.findOne({
+      where: { id },
+    });
+    if (!category) {
+      throw new NotFoundException(`Category with id ${id} not found`);
+    }
+
+    if (file) {
+      const cloudinaryResponse = await this.fileUploadService.uploadImage(file, `categories/${id}`);
+      categoryDto.imgUrl = cloudinaryResponse.secure_url;
+    }
+
+    await this.categoriesRepository.update(id, categoryDto);
     const updatedCategory = await this.categoriesRepository.findOne({
       where: { id },
     });
-    if (!updatedCategory) {
-      throw new NotFoundException(`Categoría con id ${id} no existe`);
-    }
-    await this.categoriesRepository.update(id, updateCategoryDto);
     return { message: 'Category successfully updated', updatedCategory };
   }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} category`;
-  // }
+  async inactivate(id: string) {
+    const categoryToInactivate = await this.categoriesRepository.findOne({ where: { id } });
+
+    if (!categoryToInactivate) {
+      throw new NotFoundException(`Category with id ${id} not found`);
+    }
+
+    const productsCount = await this.productsRepository.count({
+      where: { categoryId: categoryToInactivate },
+    });
+
+    if (productsCount > 0) {
+      throw new ConflictException(
+        `Category cannot be inactivated, ${productsCount} products are still assigned to this category.`,
+      );
+    }
+
+    categoryToInactivate.isActive = false;
+    await this.categoriesRepository.save(categoryToInactivate);
+
+    return { message: 'Category inactivated successfully.', category: categoryToInactivate };
+  }
 }
