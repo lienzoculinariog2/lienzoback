@@ -6,12 +6,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Products } from '../products/entities/product.entity';
+import { FileUploadService } from '../file-upload/file-upload.service';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectRepository(Categories) private readonly categoriesRepository: Repository<Categories>,
     @InjectRepository(Products) private readonly productsRepository: Repository<Products>,
+    private readonly fileUploadService: FileUploadService,
   ) {}
 
   async seederService() {
@@ -36,17 +38,24 @@ export class CategoriesService {
     };
   }
 
-  async create(createCategoryDto: CreateCategoryDto) {
+  async create(categoryDto: CreateCategoryDto, file?: Express.Multer.File) {
     const existingCategory = await this.categoriesRepository.findOne({
-      where: { name: createCategoryDto.name },
+      where: { name: categoryDto.name },
     });
 
     if (existingCategory) {
-      throw new ConflictException(`Category '${createCategoryDto.name}' already exists`);
+      throw new ConflictException(`Category '${categoryDto.name}' already exists`);
     }
+
+    let imgUrl: string | undefined;
+    if (file) {
+      const cloudinaryResponse = await this.fileUploadService.uploadImage(file, 'categories');
+      imgUrl = cloudinaryResponse.secure_url;
+    }
+
     const category = this.categoriesRepository.create({
-      name: createCategoryDto.name,
-      description: createCategoryDto.description,
+      ...categoryDto,
+      imgUrl: imgUrl,
     });
     await this.categoriesRepository.save(category);
     return { message: 'Category successfully added', category };
@@ -70,15 +79,23 @@ export class CategoriesService {
     return categoryById;
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
-    await this.categoriesRepository.update(id, updateCategoryDto);
+  async update(id: string, categoryDto: UpdateCategoryDto, file?: Express.Multer.File) {
+    const category = await this.categoriesRepository.findOne({
+      where: { id },
+    });
+    if (!category) {
+      throw new NotFoundException(`Category with id ${id} not found`);
+    }
+
+    if (file) {
+      const cloudinaryResponse = await this.fileUploadService.uploadImage(file, `categories/${id}`);
+      categoryDto.imgUrl = cloudinaryResponse.secure_url;
+    }
+
+    await this.categoriesRepository.update(id, categoryDto);
     const updatedCategory = await this.categoriesRepository.findOne({
       where: { id },
     });
-    if (!updatedCategory) {
-      throw new NotFoundException(`Category with id ${id} not found`);
-    }
-    await this.categoriesRepository.update(id, updateCategoryDto);
     return { message: 'Category successfully updated', updatedCategory };
   }
 

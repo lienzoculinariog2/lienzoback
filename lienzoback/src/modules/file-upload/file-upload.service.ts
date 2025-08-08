@@ -9,12 +9,12 @@ export class FileUploadService {
 
   async uploadImage(
     file: Express.Multer.File,
-    productId: string,
+    folderPath: string,
   ): Promise<UploadApiResponse | UploadApiErrorResponse> {
     return new Promise((resolve, reject) => {
       const upload = this.cloudinary_instance.uploader.upload_stream(
         {
-          folder: `products/${productId}`,
+          folder: folderPath,
           resource_type: 'auto',
         },
         (error, result) => {

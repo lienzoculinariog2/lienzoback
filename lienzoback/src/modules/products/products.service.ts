@@ -81,9 +81,21 @@ export class ProductsService {
     return product; // Devuelve el producto con la URL actualizada
   }
 
-  update(id: string, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: string, updateProductDto: UpdateProductDto): Promise<Products> {
+    const product = await this.productsRepository.findOne({ where: { id } });
+
+    if (!product) {
+      throw new NotFoundException(`Producto con ID ${id} no encontrado.`);
+    }
+
+    // Actualiza las propiedades del producto con los datos del DTO
+    // Object.assign permite actualizar solo las propiedades que se pasen en el DTO
+    Object.assign(product, updateProductDto);
+
+    // Guarda los cambios en la base de datos
+    return this.productsRepository.save(product);
   }
+
   remove(id: number) {
     return `This action removes a #${id} product`;
   }
