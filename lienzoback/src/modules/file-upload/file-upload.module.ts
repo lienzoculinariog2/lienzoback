@@ -25,5 +25,6 @@ export const CLOUDINARY = 'Cloudinary';
       inject: [ConfigService],
     },
   ],
+  exports: [FileUploadService],
 })
 export class FileUploadModule {}
