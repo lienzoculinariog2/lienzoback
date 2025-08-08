@@ -1,26 +1,32 @@
-import { Injectable } from '@nestjs/common';
-import { CreateFileUploadDto } from './dto/create-file-upload.dto';
-import { UpdateFileUploadDto } from './dto/update-file-upload.dto';
+// src/modules/file-upload/file-upload.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Products } from '../products/entities/product.entity';
+import { FileUploadRepository } from './file-upload.repository'; // Importa el repositorio
 
 @Injectable()
 export class FileUploadService {
-  create(createFileUploadDto: CreateFileUploadDto) {
-    return 'This action adds a new fileUpload';
-  }
+  constructor(
+    // Inyecta el repositorio, no el servicio
+    private readonly fileUploadRepository: FileUploadRepository,
+    @InjectRepository(Products)
+    private readonly productsRepository: Repository<Products>,
+  ) {}
 
-  findAll() {
-    return `This action returns all fileUpload`;
-  }
+  async uploadImage(file: Express.Multer.File, productId: string) {
+    const product = await this.productsRepository.findOneBy({ id: productId });
 
-  findOne(id: number) {
-    return `This action returns a #${id} fileUpload`;
-  }
+    if (!product) {
+      throw new NotFoundException('product not found');
+    }
 
-  update(id: number, updateFileUploadDto: UpdateFileUploadDto) {
-    return `This action updates a #${id} fileUpload`;
-  }
+    // Llama al método del repositorio inyectado
+    const uploadResponse = await this.fileUploadRepository.uploadImage(file);
 
-  remove(id: number) {
-    return `This action removes a #${id} fileUpload`;
+    await this.productsRepository.update(product.id, {
+      imgUrl: uploadResponse.secure_url,
+    });
+    return this.productsRepository.findOneBy({ id: productId });
   }
 }

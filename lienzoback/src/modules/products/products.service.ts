@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Products } from './entities/product.entity';
@@ -46,7 +45,6 @@ export class ProductsService {
     const end = start + +limit;
     products = products.slice(start, end);
     return products;
-    return `This action returns all products`;
   }
 
   async getProductById(id: string): Promise<Products | null> {
