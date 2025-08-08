@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Products } from './entities/product.entity';
@@ -13,31 +14,39 @@ export class ProductsService {
     @InjectRepository(Categories)
     private readonly categoriesRepository: Repository<Categories>,
   ) {}
+
   async create(dto: CreateProductDto): Promise<Products> {
     const category = await this.categoriesRepository.findOneBy({
       id: dto.categoryId,
     });
-
     if (!category) {
-      throw new NotFoundException('Categoría no encontrada');
+      throw new NotFoundException(`Categoría con ID ${dto.categoryId} no encontrada.`);
     }
-    const product = this.productsRepository.create();
-    product.name = dto.name;
-    product.description = dto.description;
-    product.price = dto.price;
-    product.stock = dto.stock;
-    product.caloricLevel = dto.caloricLevel;
-    product.categoryId = category;
-    product.imgUrl = dto.imgUrl;
-    product.isActive = dto.isActive ?? true;
-    product.ingredients = dto.ingredients ?? [];
+
+    const existingProduct = await this.productsRepository.findOne({
+      where: { name: dto.name },
+    });
+    if (existingProduct) {
+      throw new ConflictException(`Ya existe un producto con el nombre "${dto.name}".`);
+    }
+
+    const product = this.productsRepository.create({
+      name: dto.name,
+      description: dto.description,
+      price: dto.price,
+      stock: dto.stock,
+      caloricLevel: dto.caloricLevel,
+      ingredients: dto.ingredients ?? [],
+      isActive: dto.isActive ?? true,
+      categoryId: category,
+      imgUrl: dto.imgUrl,
+    });
 
     return await this.productsRepository.save(product);
   }
 
   async findAll(page: number = 1, limit: number = 5) {
     let products = await this.productsRepository.find();
-
     if (!page || !limit) {
       return products;
     }
@@ -47,22 +56,21 @@ export class ProductsService {
     return products;
   }
 
+  // Nuevo método para obtener un producto por su ID
   async getProductById(id: string): Promise<Products | null> {
     return await this.productsRepository.findOne({
       where: { id },
     });
   }
 
-  async update(id: string, product: Partial<Products>) {
-    await this.productsRepository.update(id, product);
+  async update(id: string, updateProductDto: UpdateProductDto): Promise<Products> {
+    const product = await this.productsRepository.findOne({ where: { id } });
 
-    const updatedProduct = await this.productsRepository.findOne({
-      where: { id },
-    });
-    if (!updatedProduct) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+    if (!product) {
+      throw new NotFoundException(`Producto con ID ${id} no encontrado.`);
     }
-    return updatedProduct;
+    Object.assign(product, updateProductDto);
+    return this.productsRepository.save(product);
   }
 
   remove(id: number) {
